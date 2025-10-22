@@ -10,9 +10,11 @@
             </div>
         </div>
         <div class="body-inner"></div>
+        <Account />
     </div>
 </template>
 <script setup>
+import Account from '@/views/account/Account.vue'
 import LayoutHeader from '@/components/LayoutHeader.vue'
 import { ref, onMounted, getCurrentInstance } from 'vue';
 

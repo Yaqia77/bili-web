@@ -1,13 +1,16 @@
 <template>
     <div :class="['header-bar', 'header-bar-' + props.theme]">
         <div class="menu">
-            <router-link class="iconfont icon-wf_Bzhan">首页</router-link>
+            <router-link class="iconfont icon-wf_Bzhan" to="/">首页</router-link>
         </div>
         <div class="search-body">
             <div class="search-panel">
                 <div class="search-panel-inner">
-                    <input type="text">
-                    <div class="iconfont icon-sousuo"></div>
+                    <div class="input-panel">
+                        <input type="text">
+                        <div class="iconfont icon-sousuo"></div>
+                    </div>
+
                 </div>
             </div>
         </div>
@@ -79,9 +82,62 @@ const props = defineProps({
     }
 
     .search-body {
-        display: flex;
-        align-items: center;
-        justify-content: center;
+        color: #61666d;
+
+        .search-panel {
+
+
+            margin: 0px auto;
+            max-width: 80%;
+
+            .search-panel-inner {
+                // width: 100%;
+                // position: absolute;
+                top: 10px;
+                left: 0px;
+                border: 1px solid #e3e5e7;
+                border-radius: 8px;
+                overflow: hidden;
+                z-index: 1001;
+
+                .input-panel {
+                    display: flex;
+                    align-items: center;
+                    background: #f1f2f3;
+
+                    input {
+                        width: 100%;
+                        border: none;
+                        background: #f1f2f3;
+                        border-radius: 5px;
+                        padding: 8px 10px;
+                        margin: 3px 10px 3px 10px;
+
+                        &:focus {
+                            outline: none;
+                        }
+                    }
+                    .iconfont{
+                        font-size: 20px;
+                        margin-right: 10px;
+                        color: #2f3238;
+                        width: 35px;
+                        height: 30px;
+                        display: flex;
+                        align-content: center;
+                        justify-content: center;
+                        border-radius: 5px;
+                        cursor: pointer;
+                        &:hover{
+                            background: #ddd;
+                        }
+                    }
+
+                }
+            }
+        }
+
+
     }
 
     .user-panel {
@@ -89,7 +145,6 @@ const props = defineProps({
         justify-content: flex-end;
         align-items: center;
         gap: 12px;
-        margin-right: 50px;
 
         .user-avatar {
             width: 35px;
@@ -153,6 +208,7 @@ const props = defineProps({
     .menu-item {
         color: #61666d;
     }
+
     a {
         color: #61666d;
     }
