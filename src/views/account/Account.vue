@@ -11,6 +11,7 @@
         <img src="../../assets/user.png" alt="" />
       </div>
       <el-form
+        ref="formDataRef"
         :model="formData"
         :rules="rules"
         @submit.prevent
@@ -127,14 +128,14 @@
   </Dialog>
 </template>
 <script setup>
-import { ref, getCurrentInstance } from "vue";
+import { ref, getCurrentInstance,nextTick } from "vue";
 import Dialog from "@/components/Dialog.vue"
 ;
 const {proxy} = getCurrentInstance();
 console.log('global proxy', proxy.verify);
 
 const opType = ref(0); //0: login 1: register
-
+const formDataRef = ref(null);
 const dialogConfig = ref({
   show: true,
   buttons: [],
@@ -164,7 +165,7 @@ const rules = {
       // type: "email",
       // message: "请输入正确的邮箱格式",
       // trigger: ["blur", "change"],
-      // validator: proxy.Verify.email,
+      validator: proxy.verify.email,
     },
   ],
   nickName: [
@@ -196,8 +197,8 @@ const rules = {
   registerPassword: [
     { required: true, message: "请输入密码", trigger: "blur" },
     {
-      // validator: proxy.Verify.password,
-      message: "密码只能是数字、字母，长度在8到20个字符之间",
+      validator: proxy.verify.password,
+      message: "密码只能是数字、字母,长度在8到20个字符之间",
       trigger: ["blur", "change"],
     },
   ],
@@ -213,7 +214,7 @@ const rules = {
 
 const resetForm = () =>{
   nextTick(()=>{
-    formDataRef.value.resetFields()
+    formDataRef.value?.resetFields && formDataRef.value.resetFields()
     formData.value = {}
   })
 }
@@ -223,7 +224,7 @@ const showPanel = (type) => {
 };
 
 const doSubmit = () => {
-  formDataRef.value.validator(async (valid) => {
+  formDataRef.value.validate(async (valid) => {
     if (!valid) {
       return
     } 
