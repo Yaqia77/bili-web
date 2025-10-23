@@ -12,7 +12,10 @@ import 'element-plus/dist/index.css'
 import VueCookies from 'vue-cookies'
 
 import Dialog from '@/components/Dialog.vue'
-import Verify from '@/utils/Verify.js'
+import Verify from '@/utils/verify.js'
+import Request from './utils/request'
+import Message from './utils/Message'
+import {Api} from "@/utils/api"
 
 const app = createApp(App)
 app.use(router)
@@ -27,7 +30,9 @@ app.config.globalProperties.bodyMaxWidth = 2000
 app.config.globalProperties.bodyMinWidth = 1250
 
 app.config.globalProperties.verify = Verify
-
+app.config.globalProperties.request = Request
+app.config.globalProperties.message = Message
+app.config.globalProperties.api = Api
 app.mount('#app')
 
 // plugins: [ vue(), createSvgIconsPlugin({

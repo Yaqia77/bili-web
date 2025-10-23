@@ -128,11 +128,25 @@
   </Dialog>
 </template>
 <script setup>
-import { ref, getCurrentInstance,nextTick } from "vue";
-import Dialog from "@/components/Dialog.vue"
-;
-const {proxy} = getCurrentInstance();
-console.log('global proxy', proxy.verify);
+import { ref, getCurrentInstance, nextTick } from "vue";
+import Dialog from "@/components/Dialog.vue";
+import { useLoginStore } from "@/stores/loginStore";
+
+const loginStore = useLoginStore();
+
+const checkCodeInfo = ref({});
+const changeCheckCode = async () => {
+  let result = await proxy.request({
+    url: proxy.api.checkCode,
+  });
+  if (!result) {
+    return;
+  }
+  checkCodeInfo.value = result.data;
+};
+
+const { proxy } = getCurrentInstance();
+console.log("global proxy", proxy.verify);
 
 const opType = ref(0); //0: login 1: register
 const formDataRef = ref(null);
@@ -180,17 +194,9 @@ const rules = {
   password: [
     { required: true, message: "请输入密码", trigger: "blur" },
     {
-      min: 6,
+      min: 8,
       max: 20,
-      message: "密码长度在6到20个字符之间",
-      trigger: ["blur", "change"],
-    },
-  ],
-  checkCode: [
-    { required: true, message: "请输入验证码", trigger: "blur" },
-    {
-      len: 6,
-      message: "验证码为6位字符",
+      message: "密码只能是数字、字母,长度在8到20个字符之间",
       trigger: ["blur", "change"],
     },
   ],
@@ -212,12 +218,13 @@ const rules = {
   checkCode: [{ required: true, message: "请输入图片验证码", trigger: "blur" }],
 };
 
-const resetForm = () =>{
-  nextTick(()=>{
-    formDataRef.value?.resetFields && formDataRef.value.resetFields()
-    formData.value = {}
-  })
-}
+const resetForm = () => {
+  changeCheckCode();
+  nextTick(() => {
+    formDataRef.value?.resetFields && formDataRef.value.resetFields();
+    formData.value = {};
+  });
+};
 const showPanel = (type) => {
   opType.value = type;
   resetForm();
@@ -226,20 +233,19 @@ const showPanel = (type) => {
 const doSubmit = () => {
   formDataRef.value.validate(async (valid) => {
     if (!valid) {
-      return
-    } 
-    let params = {}
-    Object.assign(params, formData.value)
+      return;
+    }
+    let params = {};
+    Object.assign(params, formData.value);
     let result = await proxyRefs.Request({
-      url:api.xxx,
-      params
-    })
-    if(!result){
-      return
+      url: api.xxx,
+      params,
+    });
+    if (!result) {
+      return;
     }
   });
 };
-
 </script>
 <style lang="scss" scoped>
 .dialog-panel {
