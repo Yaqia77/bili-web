@@ -10,12 +10,14 @@ import '@/assets/icons/iconfont.css'
 import ElementPlus from 'element-plus'
 import 'element-plus/dist/index.css'
 import VueCookies from 'vue-cookies'
-
+import Cover from '@/components/Cover.vue'
+import Avatar from '@/components/Avatar.vue'
 import Dialog from '@/components/Dialog.vue'
 import Verify from '@/utils/verify.js'
 import Request from './utils/request'
 import Message from './utils/Message'
 import {Api} from "@/utils/api"
+import Utils from "@/utils/utils.js"
 
 const app = createApp(App)
 app.use(router)
@@ -24,15 +26,20 @@ app.use(createPinia())
 app.use(ElementPlus)
 
 app.component("Dialog",Dialog)
+app.component("Cover",Cover)
+app.component("Avatar",Avatar)
 
 app.config.globalProperties.VueCookies = VueCookies;
-app.config.globalProperties.bodyMaxWidth = 2000
+app.config.globalProperties.bodyMaxWidth = 1920
 app.config.globalProperties.bodyMinWidth = 1250
 
 app.config.globalProperties.verify = Verify
 app.config.globalProperties.request = Request
 app.config.globalProperties.message = Message
 app.config.globalProperties.api = Api
+app.config.globalProperties.utils = Utils
+app.config.globalProperties.imageThumbnailSuffix = "_thumbnail.jpg"
+
 app.mount('#app')
 
 // plugins: [ vue(), createSvgIconsPlugin({

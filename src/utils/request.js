@@ -11,7 +11,7 @@ const responseTypeJson = 'json'
 let loading = null;
 const instance = axios.create({
     withCredentials: true,
-    baseURL: "/api",
+    baseURL: import.meta.env.VITE_BASE_URL,
     timeout: 10 * 1000,
 });
 //请求前拦截器

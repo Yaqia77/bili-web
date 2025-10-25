@@ -41,6 +41,7 @@ const windowScrollHandler = () => {
     background: #fff;
     margin: 0px auto;
     min-height: calc(100vh);
+    width: 100%;
 
     // transform: translate(0, 0);
     .header {
@@ -60,10 +61,11 @@ const windowScrollHandler = () => {
         position: fixed;
         width: 100%;
         // 关键修改：用#{}包裹v-bind，避免Sass解析错误
-        max-width: #{'v-bind(proxy.bodyMaxWidth)'};
+        max-width: #{'v-bind(proxy.bodyMaxWidth)px'};
         top: 0;
-        left: 0;
-        right: 0;
+        // z-index: 1001;
+        // left: 0;
+        // right: 0;
         margin: 0 auto;
         box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
         background: #fff;
@@ -75,4 +77,5 @@ const windowScrollHandler = () => {
         height: 20000px;
     }
 }
+
 </style>

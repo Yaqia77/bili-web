@@ -1,10 +1,10 @@
 <template>
   <Dialog
-    :show="dialogConfig.show"
+    :show="loginStore.showLogin"
     :buttons="dialogConfig.buttons"
     width="800px"
     :showCancel="false"
-    @close="dialogConfig.show = false"
+    @close="closeDialog"
   >
     <div class="dialog-panel">
       <div class="bg">
@@ -26,11 +26,11 @@
             注册
           </div>
         </div>
-        <el-form-item prop="email">
+        <el-form-item prop="account">
           <el-input
             clearable
             placeholder="请输入邮箱"
-            v-model.trim="formData.email"
+            v-model.trim="formData.account"
             :maxlength="150"
             size="large"
           >
@@ -99,7 +99,6 @@
             <div class="input">
               <el-input
                 clearable
-                show-password
                 placeholder="请输入验证码"
                 v-model.trim="formData.checkCode"
                 size="large"
@@ -109,7 +108,7 @@
                 </template>
               </el-input>
             </div>
-            <img src="" alt="" />
+            <img :src="checkCodeInfo.checkCode" @click="changeCheckCode" />
           </div>
         </el-form-item>
         <el-form-item>
@@ -117,7 +116,7 @@
             type="primary"
             @click="doSubmit"
             class="login-btn"
-            size="lager"
+            size="large"
           >
             <span v-if="opType == 0">登录</span>
             <span v-if="opType == 1">注册</span>
@@ -128,11 +127,13 @@
   </Dialog>
 </template>
 <script setup>
-import { ref, getCurrentInstance, nextTick } from "vue";
+import { ref, getCurrentInstance, nextTick, onMounted,onUpdated } from "vue";
 import Dialog from "@/components/Dialog.vue";
-import { useLoginStore } from "@/stores/loginStore";
 
+import md5 from "js-md5";
+import { useLoginStore } from "@/stores/loginStore";
 const loginStore = useLoginStore();
+
 
 const checkCodeInfo = ref({});
 const changeCheckCode = async () => {
@@ -155,15 +156,8 @@ const dialogConfig = ref({
   buttons: [],
 });
 
-const formData = ref({
-  account: "",
-  email: "",
-  password: "",
-  nickName: "",
-  registerPassword: "",
-  reRegisterPassword: "",
-  checkCode: "",
-});
+const formData = ref({});
+
 const checkRePassword = (rule, value, callback) => {
   if (value !== formData.value.registerPassword) {
     callback(new Error("两次输入的密码不一致"));
@@ -173,7 +167,7 @@ const checkRePassword = (rule, value, callback) => {
 };
 
 const rules = {
-  email: [
+  account: [
     { required: true, message: "请输入邮箱", trigger: "blur" },
     {
       // type: "email",
@@ -194,8 +188,8 @@ const rules = {
   password: [
     { required: true, message: "请输入密码", trigger: "blur" },
     {
-      min: 8,
-      max: 20,
+      min: 6,
+      max: 18,
       message: "密码只能是数字、字母,长度在8到20个字符之间",
       trigger: ["blur", "change"],
     },
@@ -225,10 +219,6 @@ const resetForm = () => {
     formData.value = {};
   });
 };
-const showPanel = (type) => {
-  opType.value = type;
-  resetForm();
-};
 
 const doSubmit = () => {
   formDataRef.value.validate(async (valid) => {
@@ -237,15 +227,48 @@ const doSubmit = () => {
     }
     let params = {};
     Object.assign(params, formData.value);
-    let result = await proxyRefs.Request({
-      url: api.xxx,
+    params.checkCodeKey = checkCodeInfo.value.checkCodeKey;
+    if (opType.value == 0) {
+      // console.log("加密前的密码:", params.password);
+      params.password = md5(params.password);
+      // console.log("加密后的密码:", params.password);
+    }
+    console.log("1111", params);
+
+    let result = await proxy.request({
+      url: opType.value == 1 ? proxy.api.register : proxy.api.login,
       params,
+      errorCallback: () => {
+        changeCheckCode();
+      },
     });
     if (!result) {
-      return;
+      return
+    }
+    if(opType.value == 1){
+      proxy.message.success("注册成功，请登录")
+      showPanel(0)
+    }else if(opType.value == 0){
+      proxy.message.success("登录成功")
+      loginStore.setLogin(false)
+      loginStore.saveUserInfo(result.data)
     }
   });
 };
+const closeDialog = () => {
+  loginStore.setLogin(false)
+
+}
+onUpdated(() => {
+  showPanel(0)
+})
+const showPanel = (type) => {
+  opType.value = type;
+  resetForm();
+}
+onMounted(() => {
+  showPanel(0);
+});
 </script>
 <style lang="scss" scoped>
 .dialog-panel {
@@ -291,6 +314,7 @@ const doSubmit = () => {
   }
 }
 .check-code-panel {
+  cursor: pointer;
   display: flex;
   //center设置垂直居中
   align-items: center;

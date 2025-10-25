@@ -23,7 +23,7 @@ export default defineConfig({
     hmr: true,
     proxy: {
       "/api": {
-        target: "http://127.0.0.1:8124/",
+        target: "http://localhost:7071",
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/api/,'')
       }
