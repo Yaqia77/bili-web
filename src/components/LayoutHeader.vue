@@ -14,7 +14,7 @@
       </div>
     </div>
     <div class="user-panel">
-      <div class="user-avatar" @click="login" @mouseleave="showTooltip = false">
+      <div class="user-avatar" @click="login" @mouseenter="onAvatarEnter" @mouseleave="onAvatarLeave">
         <template v-if="Object.keys(loginStore.userInfo).length > 0">
           <Avatar
             class="avatar"
@@ -23,15 +23,21 @@
             :width="35"
             :lazy="false"
           ></Avatar>
-          <div class="user-info-panel">
+          <div class="user-info-panel" :class="{ visible: userPanelShow }" @mouseenter="onPanelEnter" @mouseleave="onPanelLeave">
             <div class="nick-name">{{ loginStore.userInfo.nickName }}</div>
+            <div class="count-info">
+              <!-- 这里可以放统计与菜单条目 -->
+            </div>
+            <div class="logout" @click.stop="doLogout">退出登录</div>
           </div>
         </template>
         <Avatar v-else class="avatar" :width="35" @click="login"></Avatar>
         <div
           class="login-tooltip"
-          v-show="showTooltip = true"
-          
+          v-if="Object.keys(loginStore.userInfo).length === 0"
+          :class="{ visible: tooltipShow }"
+          @mouseenter="onTooltipEnter"
+          @mouseleave="onTooltipLeave"
         >
           <div class="login-tooltip-content">
             <div class="login-tooltip-title">登录后你可以：</div>
@@ -76,9 +82,10 @@
   </div>
 </template>
 <script setup>
-import { ref } from "vue";
+import { ref, getCurrentInstance } from "vue";
 import { useLoginStore } from "@/stores/loginStore";
 const loginStore = useLoginStore();
+const { proxy } = getCurrentInstance();
 
 const props = defineProps({
   theme: {
@@ -86,13 +93,82 @@ const props = defineProps({
     default: "light", // light | dark
   },
 });
-const showTooltip = ref(); // 控制弹窗显示的响应式变量
+const showTooltip = ref(false);
+const tooltipShow = ref(false);
+const userPanelShow = ref(false);
+let hideTimer = null;
+const UNLOGGED_DELAY = 900; // 未登录提示的隐藏延迟更长（进一步加长）
+const LOGGED_DELAY = 400;   // 已登录信息框的隐藏延迟
 const login = () => {
+  // 已登录时不再弹出登录框
+  if (Object.keys(loginStore.userInfo).length > 0) {
+    return;
+  }
   loginStore.setLogin(true);
-  showTooltip.value = false;
-  console.log(showTooltip.value);
-  //控制login-tooltip中的display属性为none
-  document.querySelector(".login-tooltip").style.display = "none";
+  //点击登录后，关闭弹窗，设置display为none，使用document.querySelector获取弹窗元素
+  const loginTooltip = document.querySelector('.login-tooltip');
+  loginTooltip.style.display = 'none';
+  
+};
+
+// 悬停交互：头像与弹窗之间无缝切换
+const onAvatarEnter = () => {
+  if (Object.keys(loginStore.userInfo).length > 0) {
+    userPanelShow.value = true;
+  } else {
+    tooltipShow.value = true;
+  }
+  if (hideTimer) {
+    clearTimeout(hideTimer);
+    hideTimer = null;
+  }
+};
+const onAvatarLeave = () => {
+  hideTimer = setTimeout(() => {
+    if (Object.keys(loginStore.userInfo).length > 0) {
+      userPanelShow.value = false;
+    } else {
+      tooltipShow.value = false;
+    }
+    hideTimer = null;
+  }, Object.keys(loginStore.userInfo).length > 0 ? LOGGED_DELAY : UNLOGGED_DELAY);
+};
+const onPanelEnter = () => {
+  if (hideTimer) {
+    clearTimeout(hideTimer);
+    hideTimer = null;
+  }
+  userPanelShow.value = true;
+};
+const onPanelLeave = () => {
+  hideTimer = setTimeout(() => {
+    userPanelShow.value = false;
+    hideTimer = null;
+  }, LOGGED_DELAY);
+};
+const onTooltipEnter = () => {
+  if (hideTimer) {
+    clearTimeout(hideTimer);
+    hideTimer = null;
+  }
+  tooltipShow.value = true;
+};
+const onTooltipLeave = () => {
+  hideTimer = setTimeout(() => {
+    tooltipShow.value = false;
+    hideTimer = null;
+  }, UNLOGGED_DELAY);
+};
+
+// 退出登录：调用后端接口并清空用户信息
+const doLogout = async () => {
+  try {
+    await proxy.request({ url: proxy.api.logout, showLoading: false });
+  } catch (_e) {
+    // 忽略错误，仍然执行本地退出
+  }
+  loginStore.saveUserInfo({});
+  proxy.message && proxy.message.success && proxy.message.success("已退出登录");
 };
 </script>
 <style lang="scss" scoped>
@@ -192,14 +268,27 @@ const login = () => {
         cursor: pointer;
       }
       .avatar {
-        transition: transform 0.3s;
+        transition: transform 0.25s cubic-bezier(0.22, 1, 0.36, 1);
         // position: absolute;
         // z-index: 10001;
         // top: 0;
         // left: 0;
       }
+      /* 强化头像放大与白色外环效果 */
+      .avatar {
+        transform-origin: center center;
+        z-index: 10002;
+      }
+      .avatar :deep(.image-panel) {
+        background: transparent;
+        box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.95);
+        border-radius: 50%;
+      }
       .user-avatar:hover .avatar {
-        transform: scale(2) translateY(10px) translateX(-10px); /* 头像放大效果保留 */
+        transform: scale(1.8);
+      }
+      .user-avatar:hover .avatar :deep(.image-panel) {
+        box-shadow: 0 0 0 4px #fff, 0 8px 20px rgba(0, 0, 0, 0.25);
       }
       .login-tooltip:hover {
         display: block;
@@ -209,13 +298,41 @@ const login = () => {
         background: #fff;
         width: 300px;
         position: absolute;
-        // top: 60px;
-        // left: -150px;
+        top: 45px;
+        left: -135px;
         border-radius: 5px;
         box-shadow: 0 0 12px rgba(0, 0, 0, 0.12);
         z-index: 10000;
+        display: block;
+        opacity: 0;
+        visibility: hidden;
+        pointer-events: none;
+        transform: translateY(6px);
+        transition: opacity 0.25s ease, visibility 0.25s ease, transform 0.25s ease;
+      }
+      .user-info-panel.visible {
         opacity: 1;
-        transition: opacity 0.3s;
+        visibility: visible;
+        pointer-events: auto;
+        transform: translateY(0);
+      }
+
+      /* 弹窗底部退出登录按钮样式（放在 user-avatar 作用域下） */
+      .logout {
+        display: block;
+        margin-top: 10px;
+        padding: 0 20px;
+        line-height: 40px;
+        text-align: center;
+        border-top: 1px solid #eee;
+        color: #2f3238;
+        cursor: pointer;
+        border-radius: 5px;
+        transition: background 0.2s ease;
+      }
+      .logout:hover {
+        //背景为灰色
+        background: #e8e8e8;
       }
 
       .nick-name {
@@ -263,12 +380,7 @@ const login = () => {
             border-radius: 5px;
           }
         }
-        .logout {
-          display: flex;
-          margin-top: 10px;
-          border-top: 1px solid #ddd;
-          cursor: pointer;
-        }
+        /* 这里的 .logout 样式移到外层统一控制 */
       }
       &:hover {
         // overflow: hidden;
@@ -276,7 +388,10 @@ const login = () => {
           transform: scale(2) translateY(10px) translateX(-10px);
         }
         .user-info-panel {
+          display: block;
           opacity: 1;
+          visibility: visible;
+          pointer-events: auto;
         }
         .login-tooltip {
           // display: block;
@@ -286,6 +401,8 @@ const login = () => {
           transition-delay: 0.3s;
           padding-top: 19px;
           margin-left: 0px;
+        // transition: opacity 0.25s ease, visibility 0.25s ease, transform 0.25s ease;
+
         }
       }
       .login-tooltip {
@@ -305,7 +422,7 @@ const login = () => {
         box-sizing: border-box;
         /* 过渡效果： opacity/visibility/transform 同步动画 */
         transition: opacity 0.3s ease, visibility 0.3s ease, transform 0.3s ease;
-        // pointer-events: auto; /* 允许鼠标事件（ hover 弹窗时不消失） */
+        // pointer-events: none; /* 默认不可交互，避免影响 hover 离开判断 */
         /* 显示状态：添加is-visible类 */
 
         
@@ -345,10 +462,12 @@ const login = () => {
         }
         /* 关键交互：hover 头像或弹窗时，提示框显示 */
         .user-avatar:hover .login-tooltip,
-        .login-tooltip:hover {
+        .login-tooltip:hover,
+        .login-tooltip.visible {
           opacity: 1;
           visibility: visible;
           transform: translateX(-50%) translateY(0); /* 垂直回到原位（动画终点） */
+          pointer-events: auto;
           transition-delay: 0s; /* 显示时无延迟（立即弹出） */
         }
         .login-btn {

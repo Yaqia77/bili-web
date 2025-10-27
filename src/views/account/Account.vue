@@ -133,7 +133,7 @@ import Dialog from "@/components/Dialog.vue";
 import md5 from "js-md5";
 import { useLoginStore } from "@/stores/loginStore";
 const loginStore = useLoginStore();
-
+const { proxy } = getCurrentInstance();
 
 const checkCodeInfo = ref({});
 const changeCheckCode = async () => {
@@ -146,7 +146,7 @@ const changeCheckCode = async () => {
   checkCodeInfo.value = result.data;
 };
 
-const { proxy } = getCurrentInstance();
+
 console.log("global proxy", proxy.verify);
 
 const opType = ref(0); //0: login 1: register
@@ -252,11 +252,18 @@ const doSubmit = () => {
       loginStore.setLogin(false)
       loginStore.saveUserInfo(result.data)
     }
+    closeDialog()
+    // 显示登录面板回到“登录”页签
+    showPanel(0)
+    
   });
 };
 const closeDialog = () => {
+  // 仅通过状态关闭登录弹窗，不直接操作 Header 的 DOM
   loginStore.setLogin(false)
-  document.querySelector(".login-tooltip").style.display = "block";
+  // 点击登录后，关闭弹窗，设置display为none，使用document.querySelector获取弹窗元素
+  const loginTooltip = document.querySelector('.login-tooltip');
+  loginTooltip.style.display = 'block';
 }
 onUpdated(() => {
   showPanel(0)

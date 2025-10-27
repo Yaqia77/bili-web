@@ -26,4 +26,4 @@ const useLoginStore = defineStore('loginStore', {
 
 export {
     useLoginStore
-} 
+}

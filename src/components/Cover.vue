@@ -26,9 +26,7 @@
         </div>
       </template>
     </el-image>
-    <div v-else class="no-image">
-        登录
-    </div>
+    <div v-else class="no-image"></div>
     <el-image-viewer
       v-if="showViewer"
       :high-resolution="true"
@@ -88,8 +86,9 @@ const fileSource = computed(() => {
         fileImage.value = null
         return null
     }
-    if(!props.source && !props.defaultImage){
-        return proxy.utils.getLocalImage(props.defaultImage)
+    if(!props.source && props.defaultImage){
+        fileImage.value = null
+        return null
     }
     if(props.source instanceof File){
         let img = new FileReader()
@@ -101,7 +100,7 @@ const fileSource = computed(() => {
         }
         return
     }else if(typeof props.source === 'string'){
-        return `${props.api.sourcePath}${props.source}`
+        return `${proxy.api.sourcePath}/${props.source}`
     }else{
         return
     }
@@ -111,7 +110,7 @@ const imageList = computed(() => {
     if(!props.preview){
         return []
     }
-    const sourceImg = props.api.sourcePath + props.source.replace(props.imageThumbnailSuffix, "")
+    const sourceImg = proxy.api.sourcePath + String(props.source || '').replace(proxy.imageThumbnailSuffix || '', "")
     return [sourceImg]
 })
 

@@ -6,6 +6,20 @@
   "description": "",
   "glyphs": [
     {
+      "icon_id": "24810951",
+      "name": "动态",
+      "font_class": "dongtai",
+      "unicode": "e621",
+      "unicode_decimal": 58913
+    },
+    {
+      "icon_id": "11238650",
+      "name": "热门",
+      "font_class": "bianpinghuatubiaosheji-",
+      "unicode": "e62b",
+      "unicode_decimal": 58923
+    },
+    {
       "icon_id": "2154210",
       "name": "弹幕数_32",
       "font_class": "danmushu",

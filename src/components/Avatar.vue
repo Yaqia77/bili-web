@@ -5,20 +5,22 @@
         :lazy="lazy"
         :width="width"
         :source="avatar"
-        :defaultImg="defaultAvatar"
+        :defaultImage="defaultAvatar"
         borderRadius="50%"
         :scale="1"
       ></Cover>
     </router-link>
-    <Cover
-      v-else
-      :lazy="lazy"
-      :width="width"
-      :source="avatar"
-      :defaultImg="defaultAvatar"
-      borderRadius="50%"
-      :scale="1"
-    ></Cover>
+    <div v-else class="avatar-wrapper">
+      <Cover
+        :lazy="lazy"
+        :width="width"
+        :source="avatar"
+        :defaultImage="defaultAvatar"
+        borderRadius="50%"
+        :scale="1"
+      ></Cover>
+      <div class="login-label">登录</div>
+    </div>
   </div>
 </template>
 <script  setup>
@@ -47,5 +49,20 @@ const props = defineProps({
 
 </script>
 <style  lang="scss" scoped>
+.avatar-wrapper{
+  position: relative;
+  display: inline-block;
+}
+.login-label{
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-size: 12px;
+  z-index: 2;
+  pointer-events: none;
+}
 
 </style>
