@@ -26,11 +26,11 @@
             注册
           </div>
         </div>
-        <el-form-item prop="account">
+        <el-form-item prop="email">
           <el-input
             clearable
             placeholder="请输入邮箱"
-            v-model.trim="formData.account"
+            v-model.trim="formData.email"
             :maxlength="150"
             size="large"
           >
@@ -152,7 +152,6 @@ console.log("global proxy", proxy.verify);
 const opType = ref(0); //0: login 1: register
 const formDataRef = ref(null);
 const dialogConfig = ref({
-  show: true,
   buttons: [],
 });
 
@@ -167,7 +166,7 @@ const checkRePassword = (rule, value, callback) => {
 };
 
 const rules = {
-  account: [
+  email: [
     { required: true, message: "请输入邮箱", trigger: "blur" },
     {
       // type: "email",
@@ -257,7 +256,7 @@ const doSubmit = () => {
 };
 const closeDialog = () => {
   loginStore.setLogin(false)
-
+  document.querySelector(".login-tooltip").style.display = "block";
 }
 onUpdated(() => {
   showPanel(0)
@@ -266,9 +265,9 @@ const showPanel = (type) => {
   opType.value = type;
   resetForm();
 }
-onMounted(() => {
-  showPanel(0);
-});
+// onMounted(() => {
+//   showPanel(0);
+// });
 </script>
 <style lang="scss" scoped>
 .dialog-panel {

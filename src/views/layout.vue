@@ -10,7 +10,7 @@
             </div>
         </div>
         <div class="body-inner"></div>
-        <Account />
+        <Account  />
     </div>
 </template>
 <script setup>
