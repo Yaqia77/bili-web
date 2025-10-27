@@ -26,7 +26,9 @@
         </div>
       </template>
     </el-image>
-    <div v-else class="no-image">请选择图片</div>
+    <div v-else class="no-image">
+        登录
+    </div>
     <el-image-viewer
       v-if="showViewer"
       :high-resolution="true"
@@ -41,7 +43,7 @@
   </div>
 </template>
 <script setup>
-import { ref, computed, getCurrentInstance } from "vue";
+import { ref, computed, getCurrentInstance,onMounted } from "vue";
 const { proxy } = getCurrentInstance();
 
 const props = defineProps({
@@ -140,7 +142,7 @@ onMounted(() => {
   align-items: center;
   overflow: hidden;
   cursor: pointer;
-  background: #f8f8f8;
+  background: #00AEEC;
 
   :deep(.el-image) {
     width: 100%;
@@ -179,7 +181,9 @@ onMounted(() => {
 
   .no-image {
     text-align: center;
-    color: #9f9f9f;
+    color: #fff;    
+    background: #00AEEC;
+    font-size:14px;
   }
 }
 </style>
