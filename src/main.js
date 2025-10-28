@@ -39,7 +39,7 @@ app.config.globalProperties.message = Message
 app.config.globalProperties.api = Api
 app.config.globalProperties.utils = Utils
 
-app.config.globalProperties.rowCategoryCount = 10
+app.config.globalProperties.rowCategoryCount = 8
 app.config.globalProperties.imageThumbnailSuffix = "_thumbnail.jpg"
 
 app.mount('#app')

@@ -280,7 +280,7 @@ const doLogout = async () => {
         z-index: 10002;
       }
       .avatar :deep(.image-panel) {
-        background: transparent;
+        // background: transparent;
         box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.95);
         border-radius: 50%;
       }

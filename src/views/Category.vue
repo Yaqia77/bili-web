@@ -40,7 +40,7 @@
                     ? 'active'
                     : '',
                 ]"
-                :to="`/v${categoryStore.categoryList[index - 1].categoryCode}`"
+                :to="`/v/${categoryStore.categoryList[index - 1].categoryCode}`"
               >
                 {{ categoryStore.categoryList[index - 1].categoryName }}
               </router-link>
@@ -52,7 +52,7 @@
                     .children"
                   :key="child.categoryCode"
                   class="child"
-                  :to="`/v${child.categoryCode}`"
+                  :to="`/v/${child.categoryCode}`"
                 >
                   {{ child.categoryName }}
                 </router-link>
@@ -69,14 +69,80 @@
                 ? 'active'
                 : '',
             ]"
-            :to="`/v${categoryStore.categoryList[index - 1].categoryCode}`"
+            :to="`/v/${categoryStore.categoryList[index - 1].categoryCode}`"
           >
             {{ categoryStore.categoryList[index - 1].categoryName }}
           </router-link>
         </template>
       </template>
+
+      <!-- 更多按钮 -->
+      <template
+        v-if="categoryStore.categoryList.length > proxy.rowCategoryCount * 2"
+      >
+        <el-popover
+          :width="187"
+          trigger="hover"
+          :show-arrow="false"
+          :offset="5"
+          placement="bottom"
+        >
+          <template #reference>
+            <div class="category-item btn-category-more">
+              更多
+              <div class="iconfont icon-more"></div>
+            </div>
+          </template>
+          <template #default>
+            <div class="child-list">
+              <router-link
+                v-for="item in categoryStore.categoryList.slice(
+                  proxy.rowCategoryCount * 2 - 1
+                )"
+                :key="item.categoryCode"
+                class="child"
+                :to="`/v/${item.categoryCode}`"
+              >
+                {{ item.categoryName }}
+              </router-link>
+            </div>
+          </template>
+        </el-popover>
+      </template>
     </div>
+    
   </div>
+  <div
+      :class="['category', mouseOver ? '' : 'category-out']"
+      v-show="showType == 1"
+    >
+      <router-link class="hot hot-out" to="/hot" target="_blank">
+        <div class="iconfont icon-bianpinghuatubiaosheji-"></div>
+        <div class="info">热门</div>
+      </router-link>
+      <div
+        class="category-list"
+        :style="{
+          'grid-template-columns': `repeat(${proxy.rowCategoryCount}, 1fr)`,
+        }"
+      >
+        <template
+          v-for="item in categoryStore.categoryList"
+          :key="item.categoryCode"
+        >
+          <router-link class="category-item" :to="`/v/${item.categoryCode}`">{{
+            item.categoryName
+          }}</router-link>
+        </template>
+        <div
+          :class="[
+            'category-op iconfont',
+            mouseOver ? 'icon-xiangyou' : 'icon-xiangyou-out',
+          ]"
+          v-show="categoryStore.categoryList.length > proxy.rowCategoryCount"
+        ></div>
+      </div>
+    </div>
 </template>
 
 <script setup>
@@ -100,7 +166,7 @@ const props = defineProps({
 });
 const showItemCount = computed(() => {
   let count = categoryStore.categoryList.length;
-  if (categoryStore.categoryList.length > proxy.rowCategoryCount) {
+  if (categoryStore.categoryList.length > proxy.rowCategoryCount * 2) {
     count = proxy.rowCategoryCount * 2 - 1;
   }
   return count;
@@ -131,6 +197,7 @@ onMounted(async () => {
 .category {
   display: flex;
   align-items: flex-start;
+  justify-content: center;
   .quick {
     display: flex;
     align-items: flex-start;
@@ -179,10 +246,11 @@ onMounted(async () => {
     }
   }
   .category-list {
-    width: 100%;
+    width: 70%;
     display: grid;
     gap: 8px;
     .category-item {
+      font-size: 14px;
       line-height: 30px;
       padding: 0 5px;
       overflow: hidden;
@@ -205,7 +273,8 @@ onMounted(async () => {
     }
     .btn-category-more {
       .iconfont {
-        font-size: 12px;
+        font-size: 10px;
+        display: inline-block;
       }
       .icon-up {
         display: none;

@@ -6,6 +6,13 @@
   "description": "",
   "glyphs": [
     {
+      "icon_id": "1080350",
+      "name": "more",
+      "font_class": "more",
+      "unicode": "e61b",
+      "unicode_decimal": 58907
+    },
+    {
       "icon_id": "24810951",
       "name": "动态",
       "font_class": "dongtai",
