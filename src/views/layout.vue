@@ -6,7 +6,16 @@
       'min-width': proxy.bodyMinWidth + 'px',
     }"
   >
-    <div class="header">
+    <div
+      class="header"
+      :style="{
+        'background-image': `url(${
+          backgroundImage
+            ? backgroundImage
+            : getLocalImage('header-img.png')
+        })`,
+      }"
+    >
       <LayoutHeader />
     </div>
     <div class="header-fixed" v-if="showFixedHeader">
@@ -15,9 +24,15 @@
     <div
       class="category-fixed"
       v-show="navActionStore.fixedCategory && showFixedCategory"
+      :style="{
+        'max-width': proxy.bodyMaxWidth + 'px',
+        'min-width': proxy.bodyMinWidth + 'px',
+      }"
+      @mouseover="lineCategoryMouseHandler(1)"
+      @mouseout="lineCategoryMouseHandler(0)"
     >
       <div class="category-fixed-inner">
-        <Category :showType="1" />
+        <Category :showType="1" :mouseOver="mouseOver" />
       </div>
     </div>
     <div
@@ -25,6 +40,7 @@
       :style="{
         'max-width': proxy.bodyMaxWidth + 'px',
         'min-width': proxy.bodyMinWidth + 'px',
+        '--body-padding': proxy.bodyPadding + 'px',
       }"
     >
       <div class="category">
@@ -42,10 +58,13 @@
 import Category from "@/views/Category.vue";
 import Account from "@/views/account/Account.vue";
 import LayoutHeader from "@/components/LayoutHeader.vue";
-import { ref, onMounted, getCurrentInstance } from "vue";
+import { ref, onMounted, getCurrentInstance, onUnmounted, computed } from "vue";
 import { useLoginStore } from "@/stores/loginStore";
 import { useNavActionStore } from "@/stores/navActionStore";
-
+import { eventBus } from "@/eventbus/eventBus.js";
+import { useCategoryStore } from "@/stores/categoryStore.js";
+import {getLocalImage} from "@/utils/utils.js";
+const categoryStore = useCategoryStore();
 const { proxy } = getCurrentInstance();
 const loginStore = useLoginStore();
 const navActionStore = useNavActionStore();
@@ -53,12 +72,23 @@ const navActionStore = useNavActionStore();
 const showFixedHeader = ref(false);
 const showFixedCategory = ref(false);
 
+const mouseOver = ref(false);
+const lineCategoryMouseHandler = (type) => {
+  mouseOver.value = type == 1;
+};
+
 onMounted(() => {
   window.addEventListener("scroll", windowScrollHandler);
+  window.addEventListener("resize", windowResizeHandler);
   // 自动登录：刷新或新标签打开时根据服务端会话还原用户信息
   autoLogin();
 });
-const windowScrollHandler = () => {
+onUnmounted(() => {
+  window.removeEventListener("scroll", windowScrollHandler);
+  window.removeEventListener("resize", windowResizeHandler);
+});
+
+const showFixedTopHandler = () => {
   const curScrollTop = window.scrollY;
   if (curScrollTop <= 20) {
     showFixedHeader.value = false;
@@ -71,6 +101,20 @@ const windowScrollHandler = () => {
     showFixedCategory.value = false;
   }
 };
+const windowScrollHandler = () => {
+  var curScrollTop = window.scrollY;
+  showFixedTopHandler(curScrollTop);
+  eventBus.emit("scroll", curScrollTop);
+};
+const windowResizeHandler = () => {
+  eventBus.emit("resize");
+};
+
+const backgroundImage = computed(() => {
+  const background = categoryStore.currentPCategory?.background;
+
+  return background ? proxy.api.sourcePath + background : null;
+});
 
 const autoLogin = async () => {
   try {
@@ -128,7 +172,7 @@ const autoLogin = async () => {
     background: #fff;
     padding: 10px 150px;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
-    margin-top: -100px;
+    margin-top: -116px;
     .category-fixed-inner {
       margin: 0 auto;
     }

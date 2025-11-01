@@ -17,7 +17,7 @@ import Verify from '@/utils/verify.js'
 import Request from './utils/request'
 import Message from './utils/Message'
 import {Api} from "@/utils/api"
-import Utils from "@/utils/utils.js"
+// import Utils from "@/utils/utils.js"
 
 const app = createApp(App)
 app.use(router)
@@ -33,11 +33,14 @@ app.config.globalProperties.VueCookies = VueCookies;
 app.config.globalProperties.bodyMaxWidth = 1920
 app.config.globalProperties.bodyMinWidth = 1250
 
+app.config.globalProperties.bodyPadding = 150
+app.config.globalProperties.carouselMaxCount = 5
+
 app.config.globalProperties.verify = Verify
 app.config.globalProperties.request = Request
 app.config.globalProperties.message = Message
 app.config.globalProperties.api = Api
-app.config.globalProperties.utils = Utils
+// app.config.globalProperties.utils = Utils
 
 app.config.globalProperties.rowCategoryCount = 8
 app.config.globalProperties.imageThumbnailSuffix = "_thumbnail.jpg"

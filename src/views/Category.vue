@@ -134,14 +134,15 @@
             item.categoryName
           }}</router-link>
         </template>
-        <div
+        
+      </div>
+      <div
           :class="[
-            'category-op iconfont',
-            mouseOver ? 'icon-xiangyou' : 'icon-xiangyou-out',
+            'category-op iconfont ',
+            mouseOver ? 'icon-shouqi' : 'icon-more',
           ]"
           v-show="categoryStore.categoryList.length > proxy.rowCategoryCount"
         ></div>
-      </div>
     </div>
 </template>
 
@@ -246,7 +247,7 @@ onMounted(async () => {
     }
   }
   .category-list {
-    width: 70%;
+    width: 100%;
     display: grid;
     gap: 8px;
     .category-item {
@@ -286,8 +287,9 @@ onMounted(async () => {
   }
   .category-op {
     float: right;
-    margin-top: 7px;
-    margin-left: 5px;
+    margin-top: 5px;
+    // margin-left: 5px;
+    color: #61666d;
   }
   .hot-out {
     width: 80px;

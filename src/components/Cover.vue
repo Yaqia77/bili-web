@@ -100,7 +100,8 @@ const fileSource = computed(() => {
         }
         return
     }else if(typeof props.source === 'string'){
-        return `${proxy.api.sourcePath}/${props.source}`
+        // 拼接资源地址时不加额外斜杠，后端为查询参数形式
+        return `${proxy.api.sourcePath}${props.source}`
     }else{
         return
     }

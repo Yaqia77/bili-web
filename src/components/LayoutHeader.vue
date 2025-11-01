@@ -1,7 +1,37 @@
 <template>
   <div :class="['header-bar', 'header-bar-' + props.theme]">
     <div class="menu">
-      <router-link class="iconfont icon-wf_Bzhan" to="/">首页</router-link>
+      <el-popover
+        :width="categoryPartCount * (150 + 21) + 24"
+        trigger="hover"
+        :show-arrow="false"
+        :offset="22"
+        placement="bottom"
+      >
+        <template #reference>
+          <router-link class="iconfont icon-wf_Bzhan" to="/">首页</router-link>
+        </template>
+        <div class="nav-list">
+          <div class="nav-part" v-for="index in categoryPartCount" :key="index">
+            <router-link
+              class="nav-item"
+              v-for="item in categoryStore.categoryList.slice(
+                (index - 1) * partCount,
+                index * partCount
+              )"
+              :key="item.id"
+              :to="`/v/${item.categoryCode}`"
+            >
+              <span class="icon" v-if="item.icon">
+                <img :src="`${proxy.api.sourcePath}${item.icon}`" />
+              </span>
+              <span class="category-name">
+                {{ item.categoryName }}
+              </span>
+            </router-link>
+          </div>
+        </div>
+      </el-popover>
     </div>
     <div class="search-body">
       <div class="search-panel">
@@ -14,7 +44,12 @@
       </div>
     </div>
     <div class="user-panel">
-      <div class="user-avatar" @click="login" @mouseenter="onAvatarEnter" @mouseleave="onAvatarLeave">
+      <div
+        class="user-avatar"
+        @click="login"
+        @mouseenter="onAvatarEnter"
+        @mouseleave="onAvatarLeave"
+      >
         <template v-if="Object.keys(loginStore.userInfo).length > 0">
           <Avatar
             class="avatar"
@@ -23,7 +58,12 @@
             :width="35"
             :lazy="false"
           ></Avatar>
-          <div class="user-info-panel" :class="{ visible: userPanelShow }" @mouseenter="onPanelEnter" @mouseleave="onPanelLeave">
+          <div
+            class="user-info-panel"
+            :class="{ visible: userPanelShow }"
+            @mouseenter="onPanelEnter"
+            @mouseleave="onPanelLeave"
+          >
             <div class="nick-name">{{ loginStore.userInfo.nickName }}</div>
             <div class="count-info">
               <!-- 这里可以放统计与菜单条目 -->
@@ -82,9 +122,11 @@
   </div>
 </template>
 <script setup>
-import { ref, getCurrentInstance } from "vue";
+import { ref, getCurrentInstance, computed } from "vue";
 import { useLoginStore } from "@/stores/loginStore";
+import { useCategoryStore } from "@/stores/categoryStore";
 const loginStore = useLoginStore();
+const categoryStore = useCategoryStore();
 const { proxy } = getCurrentInstance();
 
 const props = defineProps({
@@ -98,7 +140,7 @@ const tooltipShow = ref(false);
 const userPanelShow = ref(false);
 let hideTimer = null;
 const UNLOGGED_DELAY = 900; // 未登录提示的隐藏延迟更长（进一步加长）
-const LOGGED_DELAY = 400;   // 已登录信息框的隐藏延迟
+const LOGGED_DELAY = 400; // 已登录信息框的隐藏延迟
 const login = () => {
   // 已登录时不再弹出登录框
   if (Object.keys(loginStore.userInfo).length > 0) {
@@ -106,10 +148,10 @@ const login = () => {
   }
   loginStore.setLogin(true);
   //点击登录后，关闭弹窗，设置display为none，使用document.querySelector获取弹窗元素
-  const loginTooltip = document.querySelector('.login-tooltip');
-  loginTooltip.style.display = 'none';
-  
+  const loginTooltip = document.querySelector(".login-tooltip");
+  loginTooltip.style.display = "none";
 };
+console.log("1111", proxy.api.sourcePath);
 
 // 悬停交互：头像与弹窗之间无缝切换
 const onAvatarEnter = () => {
@@ -124,14 +166,17 @@ const onAvatarEnter = () => {
   }
 };
 const onAvatarLeave = () => {
-  hideTimer = setTimeout(() => {
-    if (Object.keys(loginStore.userInfo).length > 0) {
-      userPanelShow.value = false;
-    } else {
-      tooltipShow.value = false;
-    }
-    hideTimer = null;
-  }, Object.keys(loginStore.userInfo).length > 0 ? LOGGED_DELAY : UNLOGGED_DELAY);
+  hideTimer = setTimeout(
+    () => {
+      if (Object.keys(loginStore.userInfo).length > 0) {
+        userPanelShow.value = false;
+      } else {
+        tooltipShow.value = false;
+      }
+      hideTimer = null;
+    },
+    Object.keys(loginStore.userInfo).length > 0 ? LOGGED_DELAY : UNLOGGED_DELAY
+  );
 };
 const onPanelEnter = () => {
   if (hideTimer) {
@@ -159,6 +204,11 @@ const onTooltipLeave = () => {
     hideTimer = null;
   }, UNLOGGED_DELAY);
 };
+const partCount = 5;
+const categoryPartCount = computed(() => {
+  // 计算分类列表需要分成多少部分，向上取整
+  return Math.ceil(categoryStore.categoryList.length / partCount);
+});
 
 // 退出登录：调用后端接口并清空用户信息
 const doLogout = async () => {
@@ -308,7 +358,8 @@ const doLogout = async () => {
         visibility: hidden;
         pointer-events: none;
         transform: translateY(6px);
-        transition: opacity 0.25s ease, visibility 0.25s ease, transform 0.25s ease;
+        transition: opacity 0.25s ease, visibility 0.25s ease,
+          transform 0.25s ease;
       }
       .user-info-panel.visible {
         opacity: 1;
@@ -401,8 +452,7 @@ const doLogout = async () => {
           transition-delay: 0.3s;
           padding-top: 19px;
           margin-left: 0px;
-        // transition: opacity 0.25s ease, visibility 0.25s ease, transform 0.25s ease;
-
+          // transition: opacity 0.25s ease, visibility 0.25s ease, transform 0.25s ease;
         }
       }
       .login-tooltip {
@@ -425,7 +475,6 @@ const doLogout = async () => {
         // pointer-events: none; /* 默认不可交互，避免影响 hover 离开判断 */
         /* 显示状态：添加is-visible类 */
 
-        
         .login-tooltip-content {
           text-align: center;
         }
@@ -547,6 +596,43 @@ const doLogout = async () => {
 
   a {
     color: #61666d;
+  }
+}
+
+.nav-list {
+  display: flex;
+  .nav-part {
+    &:last-child {
+      border-right: none;
+    }
+    padding: 0 10px;
+    border-right: 1px solid #ddd;
+    .nav-item {
+      display: flex;
+      padding: 0px 10px;
+      height: 35px;
+      border-radius: 3px;
+      cursor: pointer;
+      align-items: center;
+      width: 150px;
+      text-decoration: none;
+      color: #2f3238;
+      &:hover {
+        background: #ddd;
+      }
+      .icon {
+        width: 25px;
+        height: 25px;
+        overflow: hidden;
+        margin-right: 5px;
+        img {
+          width: 100%;
+        }
+      }
+      .category-name {
+        flex: 1;
+      }
+    }
   }
 }
 </style>

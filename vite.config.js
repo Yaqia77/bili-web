@@ -21,12 +21,13 @@ export default defineConfig({
   server: {
     port: 3000,
     // hmr: true,
-    // proxy: {
-    //   "/api": {
-    //     target: "http://localhost:7071",
-    //     changeOrigin: true,
-    //     rewrite: (path) => path.replace(/^\/api/,'')
-    //   }
-    // }
+    proxy: {
+      "/api": {
+        target: "http://localhost:8000",
+        changeOrigin: true,
+        // 后端接口本身带有 /api 前缀，这里不要 rewrite
+        // 保持与前端路径一致，避免路径错误导致 200 但资源无法显示
+      }
+    }
   }
 })
