@@ -6,7 +6,7 @@
         <div class="info">动态</div>
       </div>
       <router-link class="quick-item hot" to="/hot" target="_blank">
-        <div class="iconfont icon-bianpinghuatubiaosheji-"></div>
+        <div class="iconfont icon-hot"></div>
         <div class="info">热门</div>
       </router-link>
     </div>

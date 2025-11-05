@@ -6,6 +6,27 @@
   "description": "",
   "glyphs": [
     {
+      "icon_id": "3428964",
+      "name": "icon_empty",
+      "font_class": "icon_empty",
+      "unicode": "e64f",
+      "unicode_decimal": 58959
+    },
+    {
+      "icon_id": "8766474",
+      "name": "hot",
+      "font_class": "hot",
+      "unicode": "e60f",
+      "unicode_decimal": 58895
+    },
+    {
+      "icon_id": "40234304",
+      "name": "play",
+      "font_class": "play",
+      "unicode": "e6f2",
+      "unicode_decimal": 59122
+    },
+    {
       "icon_id": "2154214",
       "name": "UP主_32",
       "font_class": "UPzhu",

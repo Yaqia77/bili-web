@@ -22,7 +22,7 @@
             height: loadingHeight + 'px',
           }"
         >
-          <img :src="proxy.utils.getLocalImage('playing.gif')" alt="" />
+          <img :src="getLocalImage('playing.gif')" alt="" />
         </div>
       </template>
     </el-image>
@@ -42,6 +42,7 @@
 </template>
 <script setup>
 import { ref, computed, getCurrentInstance,onMounted } from "vue";
+import {getLocalImage} from "@/utils/utils.js";
 const { proxy } = getCurrentInstance();
 
 const props = defineProps({

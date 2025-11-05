@@ -18,6 +18,9 @@ import Request from './utils/request'
 import Message from './utils/Message'
 import {Api} from "@/utils/api"
 // import Utils from "@/utils/utils.js"
+import VideoItem from "@/components/VideoItem.vue"
+import DataLoadMoreList from "@/components/DataLoadMoreList.vue"
+import NaData from "@/components/NaData.vue"
 
 const app = createApp(App)
 app.use(router)
@@ -28,6 +31,9 @@ app.use(ElementPlus)
 app.component("Dialog",Dialog)
 app.component("Cover",Cover)
 app.component("Avatar",Avatar)
+app.component("VideoItem",VideoItem)
+app.component("DataLoadMoreList",DataLoadMoreList)
+app.component("NaData",NaData)
 
 app.config.globalProperties.VueCookies = VueCookies;
 app.config.globalProperties.bodyMaxWidth = 1920

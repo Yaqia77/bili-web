@@ -50,7 +50,7 @@
         <router-view />
       </div>
     </div>
-    <div class="body-inner"></div>
+    <!-- <div class="body-inner"></div> -->
     <Account />
   </div>
 </template>
@@ -184,9 +184,9 @@ const autoLogin = async () => {
     }
   }
 
-  .body-inner {
-    height: 20000px;
-  }
+  // .body-inner {
+  //   height: 20000px;
+  // }
 }
 
 @media screen and (max-width: 1500px) {
