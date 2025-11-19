@@ -127,7 +127,7 @@ const formatCount = (count) => {
 
   &:hover {
     transform: translateY(-3px);
-    box-shadow: 0 5px 10px rgba(0, 0, 0, 0.1);
+    // box-shadow: 0 5px 10px rgba(0, 0, 0, 0.1);
   }
 
   .cover {
@@ -201,7 +201,7 @@ const formatCount = (count) => {
       height: auto;
       max-height: 44px;
       color: #18191c;
-      font-size: 15px;
+      font-size: 14px;
       font-weight: 500;
       margin-top: 8px;
       display: -webkit-box;
@@ -211,7 +211,7 @@ const formatCount = (count) => {
       text-overflow: ellipsis;
       word-break: break-word;
       line-height: 22px;
-      -webkit-line-clamp: 2;
+      -webkit-line-clamp: 1;
       cursor: pointer;
       transition: color 0.2s ease;
 

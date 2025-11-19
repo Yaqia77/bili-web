@@ -8,6 +8,7 @@
   >
     <div
       class="header"
+      v-show="navActionStore.showHeader"
       :style="{
         'background-image': `url(${
           backgroundImage
@@ -18,7 +19,7 @@
     >
       <LayoutHeader />
     </div>
-    <div class="header-fixed" v-if="showFixedHeader">
+    <div class="header-fixed" v-if="navActionStore.FixedHeader&&showFixedHeader || navActionStore.forceFixedHeader">
       <LayoutHeader theme="dark" />
     </div>
     <div
@@ -43,7 +44,7 @@
         '--body-padding': proxy.bodyPadding + 'px',
       }"
     >
-      <div class="category">
+      <div class="category" v-show="navActionStore.ShowCategory">
         <Category :showType="0" />
       </div>
       <div class="body-main">
@@ -172,7 +173,7 @@ const autoLogin = async () => {
     background: #fff;
     padding: 10px 150px;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
-    margin-top: -116px;
+    margin-top: -180px;
     .category-fixed-inner {
       margin: 0 auto;
     }

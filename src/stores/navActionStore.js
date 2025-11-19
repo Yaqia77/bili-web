@@ -2,15 +2,15 @@ import { defineStore } from "pinia";
 
 const useNavActionStore = defineStore("navAction", {
   state: () => ({
-    fixedHeight: true, 
+    fixedHeader: true, 
     fixedCategory: true,
     showHeader: true,
     showCategory: true,
-    forceFixedHeight: false,
+    forceFixedHeader: false,
   }),
   actions: {
-    setFixedHeight(fixedHeight) {
-      this.fixedHeight = fixedHeight;
+    setFixedHeader(fixedHeader) {
+      this.fixedHeader = fixedHeader;
     },
     setFixedCategory(fixedCategory) {
       this.fixedCategory = fixedCategory;
@@ -21,8 +21,8 @@ const useNavActionStore = defineStore("navAction", {
     setShowCategory(showCategory) {
       this.showCategory = showCategory;
     },
-    setForceFixedHeight(forceFixedHeight) {
-      this.forceFixedHeight = forceFixedHeight;
+    setForceFixedHeader(forceFixedHeader) {
+      this.forceFixedHeader = forceFixedHeader;
     },
   }
 });

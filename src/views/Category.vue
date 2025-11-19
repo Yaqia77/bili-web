@@ -1,4 +1,5 @@
 <template>
+  <div>
   <div class="category" v-show="showType === 0">
     <div class="quick">
       <div class="quick-item dynamic">
@@ -144,6 +145,7 @@
           v-show="categoryStore.categoryList.length > proxy.rowCategoryCount"
         ></div>
     </div>
+    </div>
 </template>
 
 <script setup>
@@ -270,7 +272,7 @@ onMounted(async () => {
       }
     }
     .active {
-      color: var(--blue);
+      color: var(--el-color-primary);
     }
     .btn-category-more {
       .iconfont {

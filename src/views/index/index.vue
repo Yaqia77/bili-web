@@ -1,4 +1,5 @@
 <template>
+  <div>
   <div class="commend-panel">
     <div
       class="carousel-panel"
@@ -69,6 +70,7 @@
     </div>
   </div>
   <VideoList></VideoList>
+  </div>
 </template>
 <script setup>
 import { ref, onMounted, getCurrentInstance, onUnmounted, computed } from "vue";
@@ -348,8 +350,8 @@ watch(currentVideo, (v) => {
     .video-item {
       border-radius: 8px;
       overflow: hidden;
-      background: #fff;
-      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+      // background: #fff;
+      // box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
       a {
         text-decoration: none;
         color: inherit;

@@ -5,7 +5,7 @@ const useCategoryStore = defineStore('categoryStore', {
         return {
             categoryList: [],
             categoryMap: {},
-            cureentPCategory: {},
+            currentPCategory: {},
         }
     },
     actions:{
@@ -15,11 +15,11 @@ const useCategoryStore = defineStore('categoryStore', {
         saveCategoryList(data){
             this.categoryList = data
         },
-        setCureentPCategory(data){
+        setcurrentPCategory(data){
             if(data){
-                this.cureentPCategory = this.categoryMap[data] || {}
+                this.currentPCategory = this.categoryMap[data] || {}
             }else{
-                this.cureentPCategory = {}
+                this.currentPCategory = {}
             }
         }
     }
