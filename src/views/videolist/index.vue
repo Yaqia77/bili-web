@@ -8,20 +8,17 @@
   </div>
 </template>
 <script setup>
-import { ref, getCurrentInstance, watch } from "vue";
+import { ref, getCurrentInstance, watch, nextTick } from "vue";
 import { useRoute } from "vue-router";
 import { useCategoryStore } from "../../stores/categoryStore";
 const { proxy } = getCurrentInstance();
 const categoryStore = useCategoryStore();
 const route = useRoute();
 
-const dataSource = ref({ pageNo: 1, list: [] });
+const dataSource = ref({ pageNo: 1, list: [], total: 0 });
 const loadingData = ref(false);
 const categoryIdInfo = ref({ pCategoryId: "", categoryId: "" });
-// 新增：防止initData重复执行的锁
-const isInitLoading = ref(false);
 
-// 不再缓存 categoryMap，运行时取最新值
 const converCode2Id = (pCategoryCode, categoryCode) => {
   const map = categoryStore.categoryMap || {};
   const pCategoryId = pCategoryCode ? (map[String(pCategoryCode)]?.categoryId ?? "") : "";
@@ -29,66 +26,51 @@ const converCode2Id = (pCategoryCode, categoryCode) => {
   categoryIdInfo.value = { pCategoryId, categoryId };
 }
 
-const loadDataList = async () => {
-  // 避免加载中重复请求
+const loadDataList = async (reset = false) => {
   if (loadingData.value) return;
+  if (reset) dataSource.value = { pageNo: 1, list: [], total: 0 };
   const params = {
     pageNo: dataSource.value.pageNo ?? 1,
     ...categoryIdInfo.value
   }
   loadingData.value = true;
-  try {
-    const res = await proxy.request({
-      url: proxy.api.loadVideo,
-      params
-    });
-    if (!res) return;
-    const prevList = dataSource.value.list || [];
-    dataSource.value = { ...res.data };
-    if ((res.data.pageNo ?? 1) > 1) {
-      dataSource.value.list = prevList.concat(res.data.list || []);
-    }
-  } finally {
-    loadingData.value = false;
+  const res = await proxy.request({
+    url: proxy.api.loadVideo,
+    params
+  });
+  loadingData.value = false;
+  if (!res) return;
+  if (params.pageNo === 1) {
+    dataSource.value = Object.assign({}, res.data);
+  } else {
+    dataSource.value.list = (dataSource.value.list || []).concat(res.data.list || []);
+    dataSource.value.pageNo = res.data.pageNo;
+    dataSource.value.total = res.data.total;
   }
 };
 
 const initData = async () => {
-  // 防重复：正在初始化时直接返回
-  if (isInitLoading.value) return;
-  isInitLoading.value = true;
-  try {
-    dataSource.value = { pageNo: 1, list: [] };
-    converCode2Id(route.params.pCategoryCode, route.params.categoryCode);
-    await loadDataList();
-  } finally {
-    isInitLoading.value = false;
-  }
+  converCode2Id(route.params.pCategoryCode, route.params.categoryCode);
+  await nextTick();
+  loadDataList(true);
 };
 
-// 合并监听：同时监听categoryMap和路由参数（包含pCategoryCode+categoryCode）
+// 只在 categoryMap 就绪后和 params 变化时拉取
 watch(
-  () => [
-    categoryStore.categoryMap,
-    String(route.params.pCategoryCode ?? ''),
-    String(route.params.categoryCode ?? '')
-  ],
-  ([newCategoryMap, pCategoryCode, categoryCode]) => {
-    // 条件：categoryMap已加载 + 至少有一个分类参数
-    if (
-      newCategoryMap && 
-      Object.keys(newCategoryMap).length > 0 && 
-      (pCategoryCode || categoryCode)
-    ) {
-      // 设置当前父分类（适配原逻辑）
-      if (pCategoryCode) {
-        categoryStore.setcurrentPCategory(pCategoryCode);
-      }
-      // 执行初始化（带防重复锁）
-      initData();
-    }
+  [() => categoryStore.categoryMap, () => String(route.params.pCategoryCode ?? ''), () => String(route.params.categoryCode ?? '')],
+  ([map, pCode, code], [oldMap, oldP, oldC]) => {
+    if (!map || Object.keys(map).length === 0) return;
+    initData();
   },
-  { immediate: true, deep: true }
+  { immediate: true }
 );
+
+// 下拉加载更多
+const loadMore = async () => {
+  if (loadingData.value) return;
+  if (dataSource.value.list.length >= dataSource.value.total) return;
+  dataSource.value.pageNo += 1;
+  await loadDataList();
+};
 </script>
 <style lang="scss" scoped></style>

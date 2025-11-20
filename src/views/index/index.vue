@@ -78,9 +78,10 @@ import { eventBus } from "@/eventbus/eventBus.js";
 import VideoItem from "@/components/VideoItem.vue";
 import VideoList from "@/views/videolist/index.vue";
 const { proxy } = getCurrentInstance();
-
+import { useNavActionStore } from "@/stores/navActionStore";
 const carouselVideoList = ref([]);
 const commendVideoList = ref([]);
+const navActionStore = useNavActionStore();
 
 const loadRecommendVideo = async () => {
   let res = await proxy.request({
@@ -181,10 +182,15 @@ const resetCarouselWidth = () => {
 };
 
 onMounted(() => {
+  navActionStore.setShowHeader(true);
+  navActionStore.setShowCategory(true);
+  navActionStore.setFixedHeader(false);
+  navActionStore.setFixedCategory(false);
   eventBus.on("WindowResize", () => {
     resetCarouselWidth();
   });
   resetCarouselWidth();
+
   // 初始化底部渐变色
   updateBottomGradient(currentVideo.value?.videoCover);
 });

@@ -1,6 +1,6 @@
 <template>
   <div :class="['header-bar', 'header-bar-' + props.theme]">
-    <div class="menu">
+    <div class="menu" >
       <el-popover
         :width="categoryPartCount * (150 + 21) + 24"
         trigger="hover"
@@ -11,7 +11,7 @@
         <template #reference>
           <router-link class="iconfont icon-wf_Bzhan" to="/">首页</router-link>
         </template>
-        <div class="nav-list">
+          <div class="nav-list" v-show="navActionStore.showHeader">
           <div class="nav-part" v-for="index in categoryPartCount" :key="index">
             <router-link
               class="nav-item"
@@ -125,8 +125,10 @@
 import { ref, getCurrentInstance, computed } from "vue";
 import { useLoginStore } from "@/stores/loginStore";
 import { useCategoryStore } from "@/stores/categoryStore";
+import { useNavActionStore } from "../stores/navActionStore";
 const loginStore = useLoginStore();
 const categoryStore = useCategoryStore();
+const navActionStore = useNavActionStore();
 const { proxy } = getCurrentInstance();
 
 const props = defineProps({

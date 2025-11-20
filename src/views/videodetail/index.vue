@@ -1,6 +1,21 @@
 <template>
-    <div>
-
+    <div class="video-detail">
+        <div class="video-header">
+            <div class="video-title">
+                <div class="title">{{ videoInfo.videoName }}</div>
+            </div>
+            <div class="video-info">
+                <div class="iconfont icon-play2">
+                    {{ videoInfo.playCount }}
+                </div>
+                <div class="iconfont icon-danmu">
+                    {{ videoInfo.danmuCount }}
+                </div>
+                 <div class="iconfont">
+                    {{ videoInfo.createTime }}
+                </div>
+            </div>
+        </div>
     </div>
 </template>
 
@@ -9,6 +24,11 @@ import { ref, onMounted, onUnmounted, watch, nextTick, getCurrentInstance } from
 import { useNavActionStore } from '@/stores/navActionStore'
 const navActionStore = useNavActionStore()
 const { proxy } = getCurrentInstance();
+
+const videoInfo = ref({});
+
+
+
 onMounted(() => {
     nextTick(() => {
         navActionStore.setShowHeader(false)

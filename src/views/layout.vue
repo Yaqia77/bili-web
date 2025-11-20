@@ -32,7 +32,7 @@
       @mouseover="lineCategoryMouseHandler(1)"
       @mouseout="lineCategoryMouseHandler(0)"
     >
-      <div class="category-fixed-inner">
+      <div class="category-fixed-inner" >
         <Category :showType="1" :mouseOver="mouseOver" />
       </div>
     </div>
@@ -44,7 +44,7 @@
         '--body-padding': proxy.bodyPadding + 'px',
       }"
     >
-      <div class="category" v-show="navActionStore.ShowCategory">
+      <div class="category" v-show="navActionStore.showCategory">
         <Category :showType="0" />
       </div>
       <div class="body-main">
@@ -105,7 +105,7 @@ const showFixedTopHandler = () => {
 const windowScrollHandler = () => {
   var curScrollTop = window.scrollY;
   showFixedTopHandler(curScrollTop);
-  eventBus.emit("scroll", curScrollTop);
+  eventBus.emit("windowScroll", curScrollTop);
 };
 const windowResizeHandler = () => {
   eventBus.emit("resize");
@@ -165,6 +165,10 @@ const autoLogin = async () => {
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
     background: #fff;
   }
+  // 当固定头部（header-fixed）存在时，给 body 容器预留高度，避免被遮挡
+  .header-fixed ~ .body-container {
+    padding-top: 64px;
+  }
   .category-fixed {
     position: fixed;
     z-index: 1000;
@@ -179,6 +183,7 @@ const autoLogin = async () => {
     }
   }
   .body-container {
+    
     padding: 0px var(--body-padding);
     .category {
       margin-top: 20px;
