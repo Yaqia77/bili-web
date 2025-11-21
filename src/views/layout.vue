@@ -19,7 +19,7 @@
     >
       <LayoutHeader />
     </div>
-    <div class="header-fixed" v-if="navActionStore.FixedHeader&&showFixedHeader || navActionStore.forceFixedHeader">
+    <div class="header-fixed" v-if="showFixedHeader || navActionStore.forceFixedHeader">
       <LayoutHeader theme="dark" />
     </div>
     <div
@@ -107,6 +107,7 @@ const windowScrollHandler = () => {
   showFixedTopHandler(curScrollTop);
   eventBus.emit("windowScroll", curScrollTop);
 };
+
 const windowResizeHandler = () => {
   eventBus.emit("resize");
 };
@@ -167,7 +168,7 @@ const autoLogin = async () => {
   }
   // 当固定头部（header-fixed）存在时，给 body 容器预留高度，避免被遮挡
   .header-fixed ~ .body-container {
-    padding-top: 64px;
+    // padding-top: 64px;
   }
   .category-fixed {
     position: fixed;

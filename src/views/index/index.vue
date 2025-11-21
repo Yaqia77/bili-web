@@ -185,6 +185,7 @@ onMounted(() => {
   navActionStore.setShowHeader(true);
   navActionStore.setShowCategory(true);
   navActionStore.setFixedHeader(false);
+  navActionStore.setForceFixedHeader(false);
   navActionStore.setFixedCategory(false);
   eventBus.on("WindowResize", () => {
     resetCarouselWidth();
