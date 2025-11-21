@@ -40,8 +40,15 @@
             
         </div>
         </div>
-        
+        <div class="video-body">
+            <div class="video-left">
+                <div class="video-panel">
+                    <Player ref="playerRef"></Player>
+                </div>
+            </div>
+        </div>
     </div>
+    
 </template>
 
 <script setup>
@@ -55,6 +62,7 @@ import {
 } from "vue";
 import { useNavActionStore } from "@/stores/navActionStore";
 import { useLoginStore } from "@/stores/loginStore";
+import Player from "@/components/Player.vue";
 const navActionStore = useNavActionStore();
 const loginStore = useLoginStore();
 const { proxy } = getCurrentInstance();
