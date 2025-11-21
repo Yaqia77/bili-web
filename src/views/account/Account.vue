@@ -262,8 +262,8 @@ const closeDialog = () => {
   // 仅通过状态关闭登录弹窗，不直接操作 Header 的 DOM
   loginStore.setLogin(false)
   // 点击登录后，关闭弹窗，设置display为none，使用document.querySelector获取弹窗元素
-  const loginTooltip = document.querySelector('.login-tooltip');
-  loginTooltip.style.display = 'block';
+  // const loginTooltip = document.querySelector('.login-tooltip');
+  // loginTooltip.style.display = 'block';
 }
 onUpdated(() => {
   showPanel(0)
