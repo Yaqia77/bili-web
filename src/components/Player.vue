@@ -143,10 +143,36 @@ onMounted(() => {
   nextTick(() => {
     initPlayer();
   })
+
+  eventBus.on('changeP',(_fileId)=>{
+    fileId.value = _fileId
+    player.switch - `${proxy.api.getVideoResource}/${_fileId}`
+    player.plugins.artplayerPluginDanmuku.load()
+  })
 })
 
 const playerHeight = ref(500);
-
+const showDanmu = ref(true);
+const onLineCount = ref(0);
+const changeWideScreen = () => {
+  const wideScreenControl = player.template.$control.querySelector(
+    ".art-control-wide-screen"
+  );
+  const narrowScreenControl = player.template.$control.querySelector(
+    ".art-control-narrow-screen"
+  );
+  if (wideScreenControl.style.display === "none") {
+    //切换为普通模式
+    playerHeight.value = 500;
+    wideScreenControl.style.display = "flex";
+    narrowScreenControl.style.display = "none";
+  } else {
+    //切换为宽屏模式
+    playerHeight.value = 300;
+    wideScreenControl.style.display = "none";
+    narrowScreenControl.style.display = "flex";
+  }
+};
 const fileId = ref()
 const danmuCount = ref(0);
 const loadDanmuList = async() => {

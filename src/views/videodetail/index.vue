@@ -50,7 +50,9 @@
                     <Player ref="playerRef" @changeWideScreen="changeWideScreenHandler"></Player>
                 </div>
             </div>
-            <div class="video-right"></div>
+            <div class="video-right">
+                <VideoPlist></VideoPlist>
+            </div>
         </div>
     </div>
 </template>
@@ -66,6 +68,7 @@ import {
 } from "vue";
 import { useNavActionStore } from "@/stores/navActionStore";
 import { useLoginStore } from "@/stores/loginStore";
+import VideoPlist from "./VideoPlist.vue";
 import Player from "@/components/Player.vue";
 const navActionStore = useNavActionStore();
 const loginStore = useLoginStore();
