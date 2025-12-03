@@ -1,11 +1,11 @@
 <template>
-    <div class="video-panel" v-if="videoList.length > 1">
+    <div class="video-panel" v-if="videoList.length > 0">
         <div class="video-panel-title">
             <div class="title">
                 视频选集<span class="video-count">({{ currentP }}/{{ videoList.length }})</span>
                 <span class="iconfont icon-list"></span>
             </div>
-            <el-switch v-model="autoPlay" inactive-text="自动连播"></el-switch>
+            <el-switch v-if="videoList.length > 1" v-model="autoPlay" inactive-text="自动连播"></el-switch>
         </div>
         <el-scrollbar :max-height="600" class="video-list">
             <div :class="['video-item', index == currentP - 1 ? 'active' : '']" v-for="(item, index) in videoList"
@@ -45,7 +45,7 @@ const loadVideoPList = async () => {
     if (!res) {
         return;
     }
-    videoList.value = res.data;
+    videoList.value = res.data || [];
     selectVideoFile();
 };
 loadVideoPList()
@@ -60,7 +60,10 @@ const selectVideo = (index) => {
     selectVideoFile()
 }
 const selectVideoFile = () => {
-    eventBus.emit('changeP', videoList.value[currentP.value - 1].fileId);
+    if (!videoList.value || videoList.value.length === 0) return;
+    const file = videoList.value[currentP.value - 1];
+    if (!file) return;
+    eventBus.emit('changeP', file.fileId);
 };
 
 onMounted(() => {

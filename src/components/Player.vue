@@ -24,6 +24,7 @@ import { useLoginStore } from "@/stores/loginStore";
 import { useRoute } from "vue-router";
 const route = useRoute();
 const { proxy } = getCurrentInstance();
+const emit = defineEmits(['changeWideScreen']);
 const loginStore = useLoginStore();
 const playerRef = ref();
 
@@ -146,8 +147,17 @@ onMounted(() => {
 
   eventBus.on('changeP',(_fileId)=>{
     fileId.value = _fileId
-    player.switch - `${proxy.api.getVideoResource}/${_fileId}`
-    player.plugins.artplayerPluginDanmuku.load()
+    if (player && typeof player.switch === 'function') {
+      player.switch(`${proxy.api.getVideoResource}/${_fileId}`)
+    } else if (player && player.template && player.template.$player) {
+      try {
+        const videoEl = player.template.$player;
+        videoEl.src = `${proxy.api.getVideoResource}/${_fileId}`;
+      } catch (e) {}
+    }
+    try {
+      player.plugins.artplayerPluginDanmuku.load()
+    } catch (e) {}
   })
 })
 
