@@ -34,7 +34,8 @@ const Api = {
     loadRecommendVideo: "/video/loadRecommendVideo",
     loadVideo: "/video/loadVideo",
     loadVideoPList: "/video/loadVideoPList",
-    getVideoResource: "/api/file/videoResource",
+    // 后端实际路由为 /api/file/videoResource，前端统一通过 baseURL 或 dev proxy 处理
+    getVideoResource: "/file/videoResource",
     getVideoInfo: "/video/getVideoInfo",
     //评论
     loadComment: "/comment/loadComment",

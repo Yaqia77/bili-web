@@ -8,8 +8,16 @@
         <div class="close-danmu" v-show="!showDanmu">已关闭弹幕</div>
       </div>
       <!-- 播放状态图标容器（确保初始化时能找到元素） -->
-      <div id="play" style="display: none;">
-        <img :src="getLocalImage('play.png')" alt="播放" />
+      <div id="play" style="display: flex; align-items: center; justify-content: center;">
+        <img :src="getLocalImage('play.png')" alt="播放" style="width:64px;height:64px;opacity:0.9" />
+      </div>
+
+      <!-- 错误覆盖层：加载失败时显示错误信息与重试按钮 -->
+      <div v-if="loadError" class="player-error-overlay">
+        <div class="error-box">
+          <div class="error-msg">{{ errorMessage || '请求地址不存在, 请仔细检查URL地址' }}</div>
+          <el-button type="danger" size="small" @click="retryLoad">重试</el-button>
+        </div>
       </div>
     </div>
   </div>
@@ -38,6 +46,9 @@ const showDanmu = ref(true);
 const onLineCount = ref(0);
 const fileId = ref("");
 const danmuCount = ref(0);
+const loadError = ref(false);
+const errorMessage = ref('');
+const triedFallback = ref(false);
 let player = null; // 播放器实例
 let videoElement = null; // 原生视频元素引用
 let loadRetryCount = 0; // 加载重试计数
@@ -105,25 +116,42 @@ const loadDanmuList = async () => {
  */
 const changeWideScreen = () => {
   if (!player) return;
-  const wideCtrl = player.controls.find((c) => c.name === "wide-screen");
-  const narrowCtrl = player.controls.find((c) => c.name === "narrow-screen");
-  if (!wideCtrl || !narrowCtrl) {
-    console.warn("未找到宽屏切换控件");
-    return;
-  }
+  // Artplayer 实例不一定暴露 controls 为数组，直接通过 DOM 查找我们的自定义按钮更可靠
+  try {
+    const bottom = player?.template?.$bottom || playerRef.value;
+    if (!bottom) {
+      console.warn("未找到播放器底部容器，用于切换宽屏");
+      return;
+    }
 
-  if (wideCtrl.style.display === "none") {
-    // 切换为普通模式
-    playerHeight.value = 500;
-    wideCtrl.style.display = "flex";
-    narrowCtrl.style.display = "none";
-    emit("changeWideScreen", false);
-  } else {
-    // 切换为宽屏模式
-    playerHeight.value = 300;
-    wideCtrl.style.display = "none";
-    narrowCtrl.style.display = "flex";
-    emit("changeWideScreen", true);
+    const wideIcon = bottom.querySelector?.('.icon-wide-screen');
+    const narrowIcon = bottom.querySelector?.('.icon-narrow-screen');
+
+    const wideWrapper = wideIcon ? wideIcon.closest('.art-control') || wideIcon.parentElement : null;
+    const narrowWrapper = narrowIcon ? narrowIcon.closest('.art-control') || narrowIcon.parentElement : null;
+
+    if (!wideWrapper || !narrowWrapper) {
+      console.warn('未找到宽屏/窄屏控件的 DOM 元素');
+      return;
+    }
+
+    // 根据当前显示状态切换
+    const isWide = wideWrapper.style.display === 'none' || getComputedStyle(wideWrapper).display === 'none';
+    if (isWide) {
+      // 目前处于宽屏状态，切换回普通
+      playerHeight.value = 500;
+      wideWrapper.style.display = 'flex';
+      narrowWrapper.style.display = 'none';
+      emit('changeWideScreen', false);
+    } else {
+      // 切换为宽屏
+      playerHeight.value = 300;
+      wideWrapper.style.display = 'none';
+      narrowWrapper.style.display = 'flex';
+      emit('changeWideScreen', true);
+    }
+  } catch (e) {
+    console.error('切换宽屏失败:', e);
   }
 };
 
@@ -142,6 +170,18 @@ const loadVideo = (videoUrl) => {
   if (loadRetryCount >= MAX_RETRY_COUNT) {
     const errorMsg = `视频加载失败（已重试${MAX_RETRY_COUNT}次），请检查网络或刷新页面`;
     console.error(errorMsg);
+    // 如果还没试过回退流，先尝试回退示例流
+    if (!triedFallback.value) {
+      triedFallback.value = true;
+      const fallback = 'https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8';
+      console.debug('[视频加载] 达到最大重试，尝试回退示例流', fallback);
+      loadRetryCount = 0;
+      setTimeout(() => loadVideo(fallback), 200);
+      return;
+    }
+    // 最终失败，展示错误信息
+    loadError.value = true;
+    errorMessage.value = errorMsg;
     player?.notice.show(errorMsg);
     return;
   }
@@ -154,12 +194,8 @@ const loadVideo = (videoUrl) => {
       player.hls.loadSource(videoUrl);
       player.hls.attachMedia(videoElement);
       // 触发播放（处理浏览器自动播放限制）
-      if (videoElement?.paused) {
-        videoElement.play().catch(err => {
-          console.warn("自动播放失败（浏览器限制），请手动点击播放:", err);
-          player.notice.show("请点击播放器开始播放");
-        });
-      }
+      try { videoElement.play().catch(()=>{}); } catch(e){}
+      try { player.play && player.play(); } catch(e){}
       return;
     } catch (e) {
       console.error("HLS加载失败，降级为原生播放:", e);
@@ -173,10 +209,8 @@ const loadVideo = (videoUrl) => {
       videoElement.src = videoUrl; // 更新视频地址
       videoElement.load(); // 强制加载
       // 尝试自动播放
-      videoElement.play().catch(err => {
-        console.warn("自动播放失败，需手动触发:", err);
-        player.notice.show("请点击播放器开始播放");
-      });
+      try { videoElement.play().catch(()=>{}); } catch(e){}
+      try { player.play && player.play(); } catch(e){}
       return;
     } catch (e) {
       console.error("原生视频加载失败:", e);
@@ -189,6 +223,94 @@ const loadVideo = (videoUrl) => {
   setTimeout(() => {
     loadVideo(videoUrl);
   }, RETRY_DELAY);
+  // 失败或重试时确保控制栏可见，便于用户交互
+  try {
+    if (player?.template?.$bottom) player.template.$bottom.style.display = 'flex';
+  } catch (e) {}
+};
+
+/**
+ * 根据 fileId 探测可能的 m3u8 地址并返回首个可用的 URL
+ * 尝试顺序：
+ * - /api/file/videoResource/<id>
+ * - /api/file/videoResource/<id>.m3u8
+ * - /api/file/videoResource/<id>/index.m3u8
+ * - /api/file/videoResource/<id>/master.m3u8
+ * 如果 HEAD 不被服务器接受，会尝试 GET 校验
+ */
+const findPlayableUrl = async (id) => {
+  if (!id) return null;
+  // 使用 /api 前缀以便走 Vite dev proxy（前端在开发时通过 /api 转发到后端）
+  const base = `/api${proxy.api.getVideoResource}/${id}`;
+  const candidates = [
+    base,
+    `${base}.m3u8`,
+    `${base}/index.m3u8`,
+    `${base}/master.m3u8`,
+    `${base}/playlist.m3u8`,
+  ];
+
+  for (const url of candidates) {
+    try {
+      // 先用 HEAD 探测，部分服务器可能不允许 HEAD
+      let ok = false;
+      try {
+        const headResp = await fetch(url, { method: 'HEAD' });
+        ok = headResp && headResp.ok;
+      } catch (e) {
+        // HEAD 失败时尝试 GET（只读取头部）
+        try {
+          const getResp = await fetch(url, { method: 'GET' });
+          ok = getResp && getResp.ok;
+        } catch (e2) {
+          ok = false;
+        }
+      }
+
+      if (ok) {
+        console.debug('[探测播放地址] 找到可用地址:', url);
+        return url;
+      }
+    } catch (e) {
+      console.debug('[探测播放地址] 检查地址失败', url, e);
+    }
+  }
+  console.debug('[探测播放地址] 未找到可用播放地址 for', id);
+  return null;
+};
+
+/**
+ * 将可能的绝对后端地址规范为相对 /api 路径，利用 Vite dev proxy 避免跨域问题
+ * 例如：将 `http://localhost:8000/api/file/videoResource/ID` -> `/api/file/videoResource/ID`
+ */
+const normalizeToProxyPath = (url) => {
+  if (!url) return url;
+  try {
+    if (/^https?:\/\//i.test(url)) {
+      const u = new URL(url);
+      // 如果是同源则直接返回原始路径+search+hash
+      if (u.origin === location.origin) return u.pathname + u.search + u.hash;
+      // 否则如果路径以 /api/ 开头，返回路径部分以走代理
+      if (u.pathname.startsWith('/api/')) {
+        return u.pathname + u.search + u.hash;
+      }
+      // 其他绝对地址无法代理，直接返回原
+      return url;
+    }
+    return url;
+  } catch (e) {
+    return url;
+  }
+};
+
+const retryLoad = () => {
+  loadRetryCount = 0;
+  loadError.value = false;
+  errorMessage.value = '';
+  triedFallback.value = false;
+    if (fileId.value) {
+      loadVideo(`/api${proxy.api.getVideoResource}/${fileId.value}`);
+  }
 };
 
 /**
@@ -225,7 +347,8 @@ const initPlayer = () => {
       fullscreen: true,
       settings: [],
       pip: true,
-      playbackRate: [0.5, 0.75, 1, 1.25, 1.5, 2], // 明确播放速度选项
+      // 启用播放速度控制（Artplayer 要求为 boolean），自定义速率列表如需可在后续扩展
+      playbackRate: true,
       flip: true,
       aspectRatio: true,
       screenshot: true,
@@ -253,7 +376,7 @@ const initPlayer = () => {
         {
           name: "narrow-screen",
           position: "right",
-          html: '<span class="iconfont icon-icl_narrow_screen_arrow"></span>',
+          html: '<span class="iconfont icon-narrow-screen"></span>',
           tooltip: "退出宽屏模式",
           style: {
             color: "#fff",
@@ -387,9 +510,13 @@ const initPlayer = () => {
         videoElement = player.template?.$player || player.video;
         console.debug("[播放器状态] 就绪后获取视频元素:", videoElement ? "成功" : "失败");
       }
+      // 控制栏默认显示（参考目标样式，保持控制可见）
+      try {
+        if (player?.template?.$bottom) player.template.$bottom.style.display = 'flex';
+      } catch (e) {}
       // 已有fileId则自动加载
       if (fileId.value) {
-        const videoUrl = `${proxy.api.getVideoResource}/${fileId.value}`;
+        const videoUrl = `/api${proxy.api.getVideoResource}/${fileId.value}`;
         loadVideo(videoUrl);
       }
     });
@@ -404,6 +531,7 @@ const initPlayer = () => {
 
     player.on("error", (err) => {
       console.error("[播放器错误] 发生异常:", err);
+      try { if (player?.template?.$bottom) player.template.$bottom.style.display = 'flex'; } catch(e){}
     });
 
     player.on("destroy", () => {
@@ -437,16 +565,20 @@ watch(
     console.debug("[文件ID变化] 新fileId:", newFileId);
     if (newFileId) {
       loadRetryCount = 0; // 切换视频时重置重试计数
-      const videoUrl = `${proxy.api.getVideoResource}/${newFileId}`;
-      // 播放器未初始化则等待初始化完成
-      if (!player) {
-        console.debug("[文件ID变化] 播放器未初始化，等待初始化后加载");
-        setTimeout(() => {
+      // 先探测可用的播放地址（更可靠），若找不到再回退到基础路径
+      (async () => {
+        const candidate = await findPlayableUrl(newFileId);
+        const base = `api${proxy.api.getVideoResource}/${newFileId}`;
+        const videoUrl = normalizeToProxyPath(candidate || base);
+        if (!player) {
+          console.debug("[文件ID变化] 播放器未初始化，等待初始化后加载");
+          setTimeout(() => {
+            loadVideo(videoUrl);
+          }, 500);
+        } else {
           loadVideo(videoUrl);
-        }, 500);
-      } else {
-        loadVideo(videoUrl);
-      }
+        }
+      })();
     }
   },
   { immediate: true } // 初始时触发一次检查
@@ -458,9 +590,60 @@ onMounted(() => {
     console.debug("[组件挂载] 开始初始化播放器");
     initPlayer(); // 初始化播放器
 
-    // 监听eventBus事件更新fileId
-    eventBus.on("changeP", (_fileId) => {
+    // 监听eventBus事件更新fileId：优先向后端请求可播放 URL（签名/直链），若失败则回退为原始 fileId
+    eventBus.on("changeP", async (_fileId) => {
       console.debug("[EventBus] 收到changeP事件，fileId:", _fileId);
+      if (!_fileId) return;
+      try {
+        // 先尝试让后端返回可直接播放的 URL（如果后端提供）
+        // 直接尝试 GET 请求后端路径 /api/file/videoResource/<id>
+        try {
+          const path = normalizeToProxyPath(`api${proxy.api.getVideoResource}/${_fileId}`);
+          console.debug('[EventBus] 直接 GET 探测后端播放清单:', path);
+          const resp = await fetch(path, { method: 'GET', credentials: 'include' });
+          if (resp && resp.ok) {
+            const ct = resp.headers.get('content-type') || '';
+            // 如果是 m3u8 或文本以 #EXTM3U 开头，认为是播放清单
+            const text = await resp.text();
+            if (ct.includes('application/vnd.apple.mpegurl') || ct.includes('application/x-mpegURL') || text.trim().startsWith('#EXTM3U')) {
+              console.debug('[EventBus] 后端返回 m3u8 清单，使用此路径播放:', path);
+              loadRetryCount = 0;
+              triedFallback.value = false;
+              loadError.value = false;
+              errorMessage.value = '';
+              loadVideo(path);
+              return;
+            }
+            // 如果返回 JSON 错误对象，尝试解析并记录
+            try {
+              const j = JSON.parse(text);
+              console.debug('[EventBus] getVideoResource 返回 JSON:', j);
+            } catch (e) {
+              console.debug('[EventBus] getVideoResource 返回非 m3u8 文本，继续探测', e);
+            }
+          } else {
+            console.debug('[EventBus] GET /api/file/videoResource 返回非 2xx:', resp && resp.status);
+          }
+        } catch (e) {
+          console.debug('[EventBus] 直接 GET getVideoResource 发生异常，继续探测候选路径', e);
+        }
+
+        // 如果后端未直接返回播放地址，探测多个候选 m3u8 路径
+        const candidate = await findPlayableUrl(_fileId);
+        if (candidate) {
+          const norm = normalizeToProxyPath(candidate);
+          console.debug('[EventBus] 探测到可用地址', candidate, '->', norm);
+          loadRetryCount = 0;
+          triedFallback.value = false;
+          loadError.value = false;
+          errorMessage.value = '';
+          loadVideo(norm);
+          return;
+        }
+      } catch (e) {
+        console.debug('[EventBus] 请求 getVideoResource 失败，回退使用 fileId 拼接路径', e);
+      }
+      // 回退逻辑：设置 fileId，由 watch 驱动拼接并加载
       fileId.value = _fileId;
     });
   });
@@ -555,6 +738,19 @@ onUnmounted(() => {
         }
       }
     }
+  }
+
+  // 强制显示控制栏与大播放按钮（避免被 hover/样式隐藏）
+  :deep(.art-bottom) {
+    display: flex !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+  }
+
+  :deep(.art-state) {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
   }
 
   // 弹幕面板样式
